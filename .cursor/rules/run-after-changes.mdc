@@ -1,0 +1,16 @@
+---
+description: Run the red-alert app after making changes
+globs: red-alert/**/*
+alwaysApply: false
+---
+
+# Run App After Changes
+
+After editing any file in the red-alert project, run the app:
+
+1. Stop any running Node process (if restarting)
+2. Start the dev server: `cd C:\Users\igalo\red-alert && npm run dev`
+3. Use refreshed PATH: `$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")`
+4. App URL: http://localhost:5173/ (or next available port)
+
+Run in background so the server stays up.

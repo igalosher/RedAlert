@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #1a1a2e;
+  color: #eee;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.circle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.circle.bad {
+  background: #c53030;
+  box-shadow: 0 0 60px rgba(197, 48, 48, 0.6);
+}
+
+.circle.good {
+  background: #276749;
+  box-shadow: 0 0 60px rgba(39, 103, 73, 0.6);
+}
+
+.circle.info {
+  background: #d69e2e;
+  box-shadow: 0 0 60px rgba(214, 158, 46, 0.6);
+}
+
+.circle.idle {
+  background: #4a5568;
+  box-shadow: none;
+}
+
+.log {
+  padding: 1rem 1.5rem;
+  background: #0d0d14;
+  max-height: 160px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #a0aec0;
+  line-height: 1.5;
+}
+
+.log-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.last-message {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #2d3748;
+}
+
+.last-message h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #a0aec0;
+}
+
+.message-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.message-table th,
+.message-table td {
+  padding: 0.4rem 0.5rem;
+  text-align: right;
+  border-bottom: 1px solid #2d3748;
+  vertical-align: top;
+}
+
+.message-table th {
+  color: #718096;
+  font-weight: 500;
+  width: 80px;
+}
+
+.message-table td {
+  color: #e2e8f0;
+}
