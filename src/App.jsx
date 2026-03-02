@@ -8,6 +8,13 @@ function formatIsraelTime(alertDate) {
   return d.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'medium' });
 }
 
+function formatCities(data) {
+  if (!data) return '';
+  const cities = data.split(',').map((c) => c.trim()).filter(Boolean);
+  if (cities.length <= 1) return data;
+  return `פתח תקווה + ${cities.length - 1} ערים נוספות`;
+}
+
 function App() {
   const [state, setState] = useState({
     status: 'loading',
@@ -60,7 +67,7 @@ function App() {
               <>
                 <tr><th>תאריך</th><td>{formatIsraelTime(latest.alertDate)}</td></tr>
                 <tr><th>כותרת</th><td>{latest.title}</td></tr>
-                <tr><th>נתונים</th><td>{latest.data}</td></tr>
+                <tr><th>יישובים</th><td>{formatCities(latest.data)}</td></tr>
                 <tr><th>סוג</th><td>{latest.type === 'bad' ? 'התרעה' : latest.type === 'good' ? 'בטוח' : latest.type === 'info' ? 'התרעה מקדימה' : latest.type}</td></tr>
                 {latest.desc && <tr><th>הוראות</th><td>{latest.desc}</td></tr>}
               </>

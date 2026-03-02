@@ -135,8 +135,11 @@ function now() {
   return new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+const EMPTY_DEBOUNCE = 2;
+
 export function poll(callback) {
   let intervalId;
+  let consecutiveEmpty = 0;
 
   async function run() {
     const logs = [];
@@ -157,14 +160,25 @@ export function poll(callback) {
       const hasGood = messages.some((m) => m.type === 'good');
 
       if (messages.length === 0) {
-        addLog('אין התרעות רלוונטיות לפתח תקווה');
-      } else if (latest?.type === 'bad') {
-        addLog(`התרעה: ${latest.title}`);
-      } else if (latest?.type === 'good') {
-        addLog(`בטוח: ${latest.title}`);
+        consecutiveEmpty += 1;
+        if (consecutiveEmpty >= EMPTY_DEBOUNCE) {
+          addLog('אין התרעות רלוונטיות לפתח תקווה');
+        } else {
+          addLog('(תגובה ריקה – בודק שוב)');
+        }
       } else {
-        addLog(`עדכון: ${latest?.title ?? ''}`);
+        consecutiveEmpty = 0;
+        if (latest?.type === 'bad') {
+          addLog(`התרעה: ${latest.title}`);
+        } else if (latest?.type === 'good') {
+          addLog(`בטוח: ${latest.title}`);
+        } else {
+          addLog(`עדכון: ${latest?.title ?? ''}`);
+        }
       }
+
+      const shouldClear = messages.length === 0 && consecutiveEmpty >= EMPTY_DEBOUNCE;
+      const latestToUse = shouldClear ? null : (latest ?? undefined);
 
       callback({
         status: 'ok',
@@ -173,8 +187,8 @@ export function poll(callback) {
         summary: {
           hasAlert: hasBad,
           isSafe: hasGood && !hasBad,
-          latest: latest?.type ?? null,
-          latestMessage: latest ?? null,
+          latest: latest ? latest.type : (shouldClear ? null : undefined),
+          latestMessage: latest ?? (shouldClear ? null : undefined),
         },
       });
     } catch (err) {

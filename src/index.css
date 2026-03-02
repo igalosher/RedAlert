@@ -72,13 +72,16 @@ body {
 }
 
 .last-message {
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem;
   border-top: 1px solid #2d3748;
+  max-height: 140px;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .last-message h3 {
-  margin: 0 0 0.75rem;
-  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #a0aec0;
 }
@@ -86,15 +89,16 @@ body {
 .message-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .message-table th,
 .message-table td {
-  padding: 0.4rem 0.5rem;
+  padding: 0.25rem 0.5rem;
   text-align: right;
   border-bottom: 1px solid #2d3748;
   vertical-align: top;
+  line-height: 1.3;
 }
 
 .message-table th {
