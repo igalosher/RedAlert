@@ -15,6 +15,24 @@ function formatCities(data) {
   return `פתח תקווה + ${cities.length - 1} ערים נוספות`;
 }
 
+const IFTTT_WEBHOOKS = {
+  red: 'https://maker.ifttt.com/trigger/Red_Alert/with/key/TNzyJuJGFlmk9mt6IH_4G',
+  yellow: 'https://maker.ifttt.com/trigger/Yellow_Alert/with/key/TNzyJuJGFlmk9mt6IH_4G',
+  green: 'https://maker.ifttt.com/trigger/Green_Alert/with/key/TNzyJuJGFlmk9mt6IH_4G',
+};
+
+async function triggerIFTTT(kind) {
+  const url = IFTTT_WEBHOOKS[kind];
+  if (!url) return;
+
+  try {
+    await fetch(url, { method: 'POST', mode: 'no-cors' });
+    console.log(`IFTTT webhook sent: ${kind}`);
+  } catch (err) {
+    console.error('Error sending IFTTT webhook', kind, err);
+  }
+}
+
 function App() {
   const [state, setState] = useState({
     status: 'loading',
@@ -22,6 +40,7 @@ function App() {
     logLines: [],
   });
   const logEndRef = useRef(null);
+  const lastWebhookKindRef = useRef(null);
 
   useEffect(() => {
     const stop = poll((result) => {
@@ -45,6 +64,25 @@ function App() {
     });
     return stop;
   }, []);
+
+  useEffect(() => {
+    const latestType = state.summary.latest;
+    if (latestType === undefined) return;
+
+    let kind = null;
+    if (latestType === 'bad') {
+      kind = 'red';
+    } else if (latestType === 'info') {
+      kind = 'yellow';
+    } else if (latestType === 'good' || latestType === null) {
+      kind = 'green';
+    }
+
+    if (kind && lastWebhookKindRef.current !== kind) {
+      lastWebhookKindRef.current = kind;
+      triggerIFTTT(kind);
+    }
+  }, [state.summary.latest]);
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -84,6 +122,11 @@ function App() {
           </div>
         ))}
         <div ref={logEndRef} />
+      </div>
+      <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+        <button onClick={() => triggerIFTTT('red')}>Test Red IFTTT</button>
+        <button onClick={() => triggerIFTTT('yellow')}>Test Yellow IFTTT</button>
+        <button onClick={() => triggerIFTTT('green')}>Test Green IFTTT</button>
       </div>
     </div>
   );
