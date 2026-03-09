@@ -41,7 +41,28 @@ async function fetchAlertsHistory() {
     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Referer': 'https://www.oref.org.il/' },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+
+  // The Oref endpoint sometimes returns truncated JSON arrays.
+  // Parse defensively, similar to the Vite dev server plugin.
+  const text = await res.text();
+  if (!text?.trim()) return [];
+
+  try {
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    const trimmed = text.trim();
+    const last = trimmed.lastIndexOf(']');
+    if (last > 100) {
+      try {
+        const parsed = JSON.parse(trimmed.slice(0, last + 1));
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        // fall through to error below
+      }
+    }
+    throw new Error('Unexpected end of JSON input from Oref history');
+  }
 }
 
 function getRecentAlerts(history, windowSeconds = 120) {

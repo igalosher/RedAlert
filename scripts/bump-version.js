@@ -10,7 +10,7 @@ if (Number.isNaN(current)) {
   process.exit(1);
 }
 
-const next = current + 0.1;
+const next = current + 0.01;
 pkg.version = next.toFixed(2);
 
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
