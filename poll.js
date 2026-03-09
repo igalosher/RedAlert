@@ -11,6 +11,14 @@ const POLL_INTERVAL_MS = 10_000;
 const GOOD_PHRASES = ['ניתן לצאת מהמרחב המוגן', 'ניתן לצאת מהמרחבים המוגנים'];
 const BAD_INDICATORS = ['ירי רקטות', 'חדירת מחבלים', 'רעידת אדמה', 'טילים', 'התרעות פיקוד העורף'];
 
+const IFTTT_WEBHOOKS = {
+  red: 'https://maker.ifttt.com/trigger/Red_Alert/with/key/TNzyJuJGFlmk9mt6IH_4G',
+  yellow: 'https://maker.ifttt.com/trigger/Yellow_Alert/with/key/TNzyJuJGFlmk9mt6IH_4G',
+  green: 'https://maker.ifttt.com/trigger/Green_Alert/with/key/TNzyJuJGFlmk9mt6IH_4G',
+};
+
+let lastWebhookKind = null;
+
 function isRelevantForCity(data) {
   if (!data || typeof data !== 'string') return false;
   return data.includes(TARGET_CITY);
@@ -62,6 +70,13 @@ function run() {
       const now = new Date().toLocaleTimeString('he-IL');
       if (messages.length === 0) {
         console.log(`[${now}] פתח תקווה: No recent alerts`);
+
+        // When there are no messages recently, treat as "green" state
+        const kind = 'green';
+        if (lastWebhookKind !== kind) {
+          lastWebhookKind = kind;
+          triggerIFTTT(kind, now);
+        }
         return;
       }
 
@@ -71,9 +86,38 @@ function run() {
         const icon = m.type === 'bad' ? '⛔' : m.type === 'good' ? '✅' : 'ℹ️';
         console.log(`  ${icon} ${m.alertDate} | ${m.title}`);
       });
+
+      // Decide which webhook to fire based on latest message type
+      let kind = null;
+      if (latest?.type === 'bad') {
+        kind = 'red';
+      } else if (latest?.type === 'info') {
+        kind = 'yellow';
+      } else if (latest?.type === 'good') {
+        kind = 'green';
+      }
+
+      if (kind && lastWebhookKind !== kind) {
+        lastWebhookKind = kind;
+        triggerIFTTT(kind, now);
+      }
     })
     .catch((err) => console.error(`[${new Date().toLocaleTimeString('he-IL')}] Error:`, err.message));
 }
+
+async function triggerIFTTT(kind, nowLabel = new Date().toLocaleTimeString('he-IL')) {
+  const url = IFTTT_WEBHOOKS[kind];
+  if (!url) return;
+  try {
+    const res = await fetch(url, { method: 'POST' });
+    if (!res.ok) {
+      console.error(`[${nowLabel}] IFTTT webhook failed (${kind}): HTTP ${res.status}`);
+    } else {
+      console.log(`[${nowLabel}] IFTTT webhook sent: ${kind}`);
+    }
+  } catch (err) {
+    console.error(`[${nowLabel}] Error sending IFTTT webhook ${kind}:`, err.message);
+  }
 
 run();
 setInterval(run, POLL_INTERVAL_MS);

@@ -1,6 +1,6 @@
 {
   "name": "red-alert",
-  "version": "1.0.0",
+  "version": "1.05",
   "type": "module",
   "description": "A modern alert system that reads JSON from APIs",
   "scripts": {

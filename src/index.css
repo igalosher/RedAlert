@@ -19,6 +19,19 @@ body {
   min-height: 100vh;
 }
 
+.version-badge {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  color: #a0aec0;
+  background: rgba(13, 13, 20, 0.9);
+  border-radius: 999px;
+  border: 1px solid #2d3748;
+  z-index: 1000;
+}
+
 .center {
   flex: 1;
   display: flex;
