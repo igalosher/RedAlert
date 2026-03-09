@@ -5,6 +5,8 @@ import orefHistoryPlugin from './oref-history-plugin.js';
 export default defineConfig({
   plugins: [react(), orefHistoryPlugin()],
   server: {
+    host: '0.0.0.0',
+    allowedHosts: ['redalert'],
     proxy: {
       '/api/oref': {
         target: 'https://www.oref.org.il',
