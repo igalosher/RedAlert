@@ -5,6 +5,9 @@
  * Good = safe to leave, Bad = active threat.
  */
 
+import http from 'node:http';
+import { URL } from 'node:url';
+
 const TARGET_CITY = 'פתח תקווה';
 const POLL_INTERVAL_MS = 10_000;
 
@@ -118,6 +121,37 @@ async function triggerIFTTT(kind, nowLabel = new Date().toLocaleTimeString('he-I
   } catch (err) {
     console.error(`[${nowLabel}] Error sending IFTTT webhook ${kind}:`, err.message);
   }
+}
+
+const CONTROL_PORT = process.env.RED_ALERT_CONTROL_PORT || 4000;
+
+const server = http.createServer(async (req, res) => {
+  try {
+    const url = new URL(req.url, 'http://localhost');
+    if (req.method === 'POST' && url.pathname === '/api/ifttt') {
+      const kind = url.searchParams.get('kind');
+      if (!['red', 'yellow', 'green'].includes(kind)) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ error: 'Invalid kind' }));
+        return;
+      }
+      await triggerIFTTT(kind);
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ ok: true, kind }));
+      return;
+    }
+
+    res.statusCode = 404;
+    res.end('Not found');
+  } catch (err) {
+    res.statusCode = 500;
+    res.end('Internal error');
+  }
+});
+
+server.listen(CONTROL_PORT, () => {
+  console.log(`Control server listening on http://localhost:${CONTROL_PORT}`);
+});
 
 run();
 setInterval(run, POLL_INTERVAL_MS);

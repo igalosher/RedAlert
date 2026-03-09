@@ -16,6 +16,15 @@ function formatCities(data) {
   return `פתח תקווה + ${cities.length - 1} ערים נוספות`;
 }
 
+async function sendTestWebhook(kind) {
+  try {
+    await fetch(`/api/ifttt?kind=${kind}`, { method: 'POST' });
+    console.log(`Requested server to trigger IFTTT: ${kind}`);
+  } catch (err) {
+    console.error('Error requesting test webhook', kind, err);
+  }
+}
+
 function App() {
   const [state, setState] = useState({
     status: 'loading',
@@ -87,6 +96,11 @@ function App() {
           </div>
         ))}
         <div ref={logEndRef} />
+      </div>
+      <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+        <button onClick={() => sendTestWebhook('red')}>Test Red IFTTT</button>
+        <button onClick={() => sendTestWebhook('yellow')}>Test Yellow IFTTT</button>
+        <button onClick={() => sendTestWebhook('green')}>Test Green IFTTT</button>
       </div>
     </div>
   );

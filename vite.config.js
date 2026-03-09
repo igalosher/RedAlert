@@ -17,6 +17,10 @@ export default defineConfig({
           });
         },
       },
+      '/api/ifttt': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
     },
   },
 });
