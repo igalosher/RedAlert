@@ -5,7 +5,7 @@
 On the Pi, run:
 
 ```bash
-sudo systemctl edit red-alert-web.service
+sudo systemctl edit redalert-web.service
 ```
 
 In the editor, add:
@@ -21,4 +21,4 @@ Save and exit (Ctrl+O, Enter, Ctrl+X). Then:
 sudo systemctl daemon-reload
 ```
 
-The `red-alert-web` service will restart every 12 hours (43200 seconds).
+The `redalert-web` service will restart every 12 hours (43200 seconds).
