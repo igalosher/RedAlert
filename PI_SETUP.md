@@ -145,6 +145,41 @@ sudo systemctl start redalert-web.service
 sudo systemctl status redalert-web.service
 ```
 
+### 5.3 Boot-time update (pull latest code and restart app on every reboot)
+
+After each reboot, the Pi can automatically pull the latest code from GitHub and restart the two app services so you always run the newest version (e.g. 1.07, 1.08).
+
+**One-time setup on the Pi:**
+
+```bash
+cd ~/red-alert
+chmod +x scripts/pi-boot-update.sh
+```
+
+Edit the service file so the path matches your repo. If your repo is at `/home/igal/red-alert`, the path in the file is already correct. Otherwise run:
+
+```bash
+sed -i "s|/home/igal/red-alert|$HOME/red-alert|g" scripts/redalert-boot-update.service
+```
+
+Then install and enable the boot-update service:
+
+```bash
+sudo cp scripts/redalert-boot-update.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable redalert-boot-update.service
+```
+
+**Order at boot:** `redalert-boot-update` runs after network is up. It runs `git fetch` + `git reset --hard origin/main`, `npm install`, then restarts `redalert-poll` and `redalert-web`. The app services start first (from step 5.1 and 5.2); this oneshot runs once and updates + restarts them so they pick up the latest code.
+
+**To test without rebooting:**
+
+```bash
+sudo /home/igal/red-alert/scripts/pi-boot-update.sh
+```
+
+(Use your actual repo path if different.)
+
 ---
 
 ## 6. Optional: restart web service every 12 hours
@@ -175,6 +210,14 @@ To open the app as `http://redalert:5173/` from your PC, either:
 ---
 
 ## 8. After code updates (git pull)
+
+**If you enabled boot-time update (5.3):** A reboot is enough — the Pi will pull and restart automatically. To update without rebooting, run once:
+
+```bash
+sudo ~/red-alert/scripts/pi-boot-update.sh
+```
+
+**If you did not set up boot update,** run manually:
 
 ```bash
 cd ~/red-alert
@@ -208,4 +251,5 @@ cd ~/red-alert && node poll.js
 - [ ] `redalert-poll.service` installed, enabled, started (port 4000).
 - [ ] `redalert-web.service` installed, enabled, started (port 5173).
 - [ ] Hostname or DNS so you can open `http://redalert:5173/` (or Pi IP).
+- [ ] (Optional) Boot update: `scripts/pi-boot-update.sh` executable, `redalert-boot-update.service` installed and enabled.
 - [ ] Test: open UI → click “Test Red/Yellow/Green IFTTT” → IFTTT fires and `journalctl -u redalert-poll.service` shows “IFTTT webhook sent”.

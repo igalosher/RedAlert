@@ -1,0 +1,14 @@
+[Unit]
+Description=RedAlert: pull latest code and restart app on boot
+After=network-online.target redalert-poll.service redalert-web.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Run as root so we can systemctl restart; script runs git/npm as repo owner
+ExecStart=/home/igal/red-alert/scripts/pi-boot-update.sh
+# If your repo is elsewhere, edit the path above or use: ExecStart=/path/to/red-alert/scripts/pi-boot-update.sh
+
+[Install]
+WantedBy=multi-user.target
