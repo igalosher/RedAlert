@@ -11,7 +11,12 @@ import { URL } from 'node:url';
 const TARGET_CITY = 'פתח תקווה';
 const POLL_INTERVAL_MS = 10_000;
 
-const GOOD_PHRASES = ['ניתן לצאת מהמרחב המוגן', 'ניתן לצאת מהמרחבים המוגנים'];
+// Match alertPoller.js: green only when Oref sends an explicit "safe/good" message
+const GOOD_PHRASES = [
+  'האירוע הסתיים',
+  'ניתן לצאת מהמרחב המוגן',
+  'ניתן לצאת מהמרחבים המוגנים',
+];
 const BAD_INDICATORS = ['ירי רקטות', 'חדירת מחבלים', 'רעידת אדמה', 'טילים', 'התרעות פיקוד העורף'];
 
 const IFTTT_WEBHOOKS = {
@@ -93,14 +98,10 @@ function run() {
 
       const now = new Date().toLocaleTimeString('he-IL');
       if (messages.length === 0) {
-        console.log(`[${now}] פתח תקווה: No recent alerts`);
-
-        // When there are no messages recently, treat as "green" state
-        const kind = 'green';
-        if (lastWebhookKind !== kind) {
-          lastWebhookKind = kind;
-          triggerIFTTT(kind, now);
-        }
+        // No recent alerts in window — do NOT fire green here. Green is only for
+        // an explicit good/safe message in JSON (type 'good'). Avoid spurious green
+        // after red/yellow when the time window empties or JSON is unchanged.
+        console.log(`[${now}] פתח תקווה: No recent alerts (no webhook; green only on explicit safe message)`);
         return;
       }
 
@@ -111,7 +112,8 @@ function run() {
         console.log(`  ${icon} ${m.alertDate} | ${m.title}`);
       });
 
-      // Decide which webhook to fire based on latest message type
+      // Decide which webhook to fire from classified types only.
+      // Green only when latest is explicitly 'good' (official safe text in JSON).
       let kind = null;
       if (latest?.type === 'bad') {
         kind = 'red';
@@ -120,6 +122,7 @@ function run() {
       } else if (latest?.type === 'good') {
         kind = 'green';
       }
+      // unknown: do not send webhook — keeps previous state until a known type appears
 
       if (kind && lastWebhookKind !== kind) {
         lastWebhookKind = kind;
